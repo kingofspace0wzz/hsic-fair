@@ -60,7 +60,7 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True, pretrain=Fal
     total = 0
     for i, (data, label, light) in enumerate(data_iter):
         data, label, light = data[:, 0, :, :].to(device), label.to(device), light.to(device)
-        y, z = model(data.view(-1, 32*32))
+        y, z = model(data)
         phi = model.phi(z)
         l = clf(F.relu(z.detach()))
         loss = criterion(y, label)
@@ -282,7 +282,7 @@ def main(args):
                 for epoch in range(30):
                     for i, (data, label, light) in enumerate(train_loader):
                         data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
-                        y, z = model(data.view(-1, 32*32))
+                        y, z = model(data)
                         optimizer.zero_grad()
                         loss = criterion(y, label)
                         loss.backward()
@@ -290,7 +290,7 @@ def main(args):
                 for epoch in range(30):
                     for i, (data, label, light) in enumerate(train_loader):
                         data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
-                        y, z = model(data.view(-1, 32*32))
+                        y, z = model(data)
                         phi = model.phi(z)
                         optimizer_phi.zero_grad()
                         phi = model.phi(z.detach())
@@ -320,7 +320,7 @@ def main(args):
             hs = 0
             for i, (data, label, light) in enumerate(train_loader):
                 data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
-                _, z = model(data.view(-1, 32*32))
+                _, z = model(data)
                 phi = model.phi(z)
                 l = clf2(F.relu(z.detach()))
                 loss = criterion(l, light)
@@ -341,7 +341,7 @@ def main(args):
         hs = 0
         for i, (data, label, light) in enumerate(test_loader):
             data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
-            _, z = model(data.view(-1, 32*32))
+            _, z = model(data)
             l = clf2(F.relu(z.detach()))
             phi = model.phi(z)
             hsic = HSIC(phi, light)
