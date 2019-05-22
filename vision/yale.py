@@ -171,6 +171,15 @@ def main(args):
     else:
         try:
             if args.pretrain:
+                criterion = torch.nn.CrossEntropyLoss()
+                for epoch in range(10):
+                    for i, (data, label, light) in enumerate(train_loader):
+                        data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
+                        y, z = model(data.view(-1, 32*32))
+                        optimizer.zero_grad()
+                        loss = criterion(y, label)
+                        loss.backward()
+                        optimizer.step()
                 for epoch in range(10):
                     for i, (data, label, light) in enumerate(train_loader):
                         data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
