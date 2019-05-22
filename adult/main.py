@@ -82,7 +82,8 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         # label_g = factor.chunk(2, dim=-1)[0].long()
         # label_r = factor.chunk(2, dim=-1)[0].long()
 
-        y, z, phi = model(inputs)
+        y, z, _ = model(inputs)
+        phi = model.classifier.map(F.relu(z.detach()))
         loss = criterion(y, label)
         hsic = HSIC(phi, label_g)
         total_loss = loss + hsic
