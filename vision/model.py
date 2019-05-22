@@ -225,6 +225,6 @@ class YaleBHSIC(nn.Module):
         # phi = self.phi(F.leaky_relu(z, 0.2, True))
         # out = self.classifier(F.leaky_relu(phi))
         
-        # out = self.classifier(F.leaky_relu(z, 0.2, True))
-        out = self.classifier(F.sigmoid(z))
+        out = self.classifier(F.leaky_relu(z, 0.2, True))
+        # out = self.classifier(F.sigmoid(z))
         return out, z
