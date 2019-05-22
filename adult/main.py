@@ -86,7 +86,7 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         phi = model.classifier.map(F.relu(z))
         loss = criterion(y, label)
         hsic = HSIC(phi, label_g)
-        total_loss = loss + hsic
+        total_loss = loss + args.c * hsic
         
         if train:
                 
