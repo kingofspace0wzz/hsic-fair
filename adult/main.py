@@ -49,7 +49,7 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         criterion = hinge_loss()
     else:
         criterion = torch.nn.CrossEntropyLoss()
-    optimizer, optimizer_r, optimizer_g, optimizer_k, optimizer_ge = optimizers
+    optimizer, optimizer_phi, optimizer_ge = optimizers
     # kernel = gp.kernels.RBF(input_dim=args.code_dim*3, variance=torch.tensor(5.),
                             # lengthscale=torch.tensor(10.))
     # kernel = gp.kernels.Linear(input_dim=args.code_dim)
@@ -83,42 +83,24 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         # label_r = factor.chunk(2, dim=-1)[0].long()
 
         y, z, phi = model(inputs)
-        g = model.gender(F.relu(z))
         loss = criterion(y, label)
-        loss_g = criterion(g, label_g)
-
-        ge = gender(F.relu(z.detach()))
-        loss_ge = criterion(ge, label_g)
         hsic = HSIC(phi, label_g)
+        total_loss = loss + hsic
         
         if train:
-            if pretrain is False:
-                if args.hsic:
-                    loss += args.c * hsic
-                    optimizer_k.zero_grad()
-                    loss.backward()
-                    optimizer_k.step()
-                else:
-                    loss = args.c *loss + loss_g + args.c * kernel_loss(model.gender.weight, model.classifier.weight, F.relu(z), kernel)
-                    optimizer.zero_grad()
-                    loss.backward()
-                    optimizer.step()
-
-                    optimizer_ge.zero_grad()
-                    loss_ge.backward()
-                    optimizer_ge.step()
-            else:
-                loss = loss + loss_g
+                
+            if args.hsic:
                 optimizer.zero_grad()
-                loss.backward()
+                total_loss.backward()
                 optimizer.step()
+
+                optimizer_phi.zero_grad()
+                neg_h = -hsic
+                neg_h.backward()
+                optimizer_phi.step()
         
         _, predicted = torch.max(y.data, 1)
-        _, predicted_g = torch.max(g.data, 1)
-        _, predicted_ge = torch.max(ge.data, 1)
         correct += (predicted == label).sum().item()
-        correct_g += (predicted_g == label_g).sum().item()
-        correct_ge += (predicted_ge == label_g).sum().item()
         total += label.size(0)
         
         ones = torch.ones(label.size(0), dtype=torch.long).to(device)
@@ -146,13 +128,11 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         clf_loss += loss.item()
         hs += hsic.item()
     
-    clf_acc = 100 * correct / total
-    g_acc = 100 * correct_g / total
-    adv_acc = 100 * correct_ge / total
+    clf_acc = 100 * correct / totall
     parity = np.abs(y_m / total_m - y_f / total_f)
     male = total_m / total
 
-    return clf_loss, clf_acc, g_acc, adv_acc, parity, hs  
+    return clf_loss, clf_acc, parity, hs  
 
 def baseline(args, data_iter, model, optimizers, epoch, train=True):
     n = args.batch_size
@@ -227,81 +207,6 @@ def baseline(args, data_iter, model, optimizers, epoch, train=True):
 
     return clf_loss, clf_acc, r_acc, g_acc, parity
 
-def svm():
-    pass
-
-def adversarial(args, data_iter, model, optimizers, epoch, train=True, pretrain=False):
-    n = args.batch_size
-    size = len(data_iter.dataset)
-    device = args.device
-    criterion = torch.nn.CrossEntropyLoss()
-    optimizer, optimizer_r, optimizer_g, optimizer_adv = optimizers
-    if train:
-        model.train()
-    else:
-        model.eval()
-
-    clf_loss = 0
-    clf_acc = 0
-    correct = 0
-    correct_r = 0
-    correct_g = 0
-    total = 0
-    total_m = 0
-    total_f = 0
-    y_m = 0
-    y_f = 0
-    for i, data in enumerate(data_iter):
-        inputs, label, factor = [d.to(device) for d in data] 
-        label = label.long().squeeze(1)
-        label_r = factor.chunk(2, dim=-1)[0].squeeze(1).long()
-        label_g = factor.chunk(2, dim=-1)[1].squeeze(1).long()
-        y, z = model(inputs)
-        r, g = model.race(F.relu(z.detach())), model.gender(F.relu(z.detach()))
-        loss = criterion(y, label)
-        loss_r = criterion(r, label_r)
-        loss_g = criterion(g, label_g)
-        
-        if train:
-            if pretrain is False:
-                loss_adv = loss - args.c * loss_g
-                optimizer_adv.zero_grad()
-                loss_adv.backward()
-                optimizer_adv.step()
-            else:
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
-
-                optimizer_g.zero_grad()
-                loss_g.backward()
-                optimizer_g.step()
-        
-        _, predicted = torch.max(y.data, 1)
-        _, predicted_r = torch.max(r.data, 1)
-        _, predicted_g = torch.max(g.data, 1)
-        correct += (predicted == label).sum().item()
-        correct_r += (predicted_r == label_r).sum().item()
-        correct_g += (predicted_g == label_g).sum().item()
-        total += label.size(0)
-
-        ones = torch.ones(label.size(0), dtype=torch.long).to(device)
-        zeros = torch.zeros(label.size(0), dtype=torch.long).to(device)
-        total_m += (ones == label_g).sum().item()
-        total_f += (zeros == label_g).sum().item()
-        y_m += ((predicted == ones) == (ones == label_g)).sum().item()
-        y_f += ((predicted == zeros) == (zeros == label_g)).sum().item()
-    
-        clf_loss += loss.item()
-    
-    clf_acc = 100 * correct / total
-    r_acc = 100 * correct_r / total
-    g_acc = 100 * correct_g / total
-    parity = np.abs(y_m / total_m - y_f / total_f)
-    male = total_m / total
-
-    return clf_loss, clf_acc, r_acc, g_acc, parity, male
-
 def main(args):
     torch.cuda.set_device(args.cuda)
     print("Loading data")
@@ -320,13 +225,9 @@ def main(args):
         model = Model(n_features, args.code_dim, args.hidden, 2, 2, args.drop).to(args.device)
     # race = Classifier(args.code_dim*3, 2, args.hidden).to(args.device)
     # gender = Classifier(args.code_dim*3, 2, args.hidden).to(args.device)
-    optimizer = torch.optim.Adam([{'params': model.encoder.parameters()}, {'params': model.classifier.parameters()}, {'params': model.gender.parameters()}], lr=args.lr)
-    optimizer_r = torch.optim.Adam(model.race.parameters(), lr=args.lr)
-    optimizer_g = torch.optim.Adam(list(model.gender.parameters()), lr=args.lr)
-    optimizer_k = torch.optim.Adam(list(model.classifier.parameters())+list(model.encoder.parameters()), lr=args.lr)
-    optimizer_adv = torch.optim.Adam(list(model.encoder.parameters()) + 
-                                    list(model.classifier.parameters()) + 
-                                    list(model.gender.parameters()), lr=args.lr)
+    optimizer = torch.optim.Adam(list(model.encoder.parameters()) + 
+                                list(model.classifier.net.parameters()), lr=args.lr)
+    optimizer_phi = torch.optim.Adam(list(model.classifier.phi.parameters()), lr=args.lr)
     # gender = Classifier(args.code_dim, 2, args.hidden).to(args.device)
     gender = nn.Linear(args.code_dim, 2).to(args.device)
     optimizer_ge = torch.optim.Adam(gender.parameters(), lr=args.lr)
@@ -346,52 +247,27 @@ def main(args):
         except KeyboardInterrupt:
             print('-'*50)
             print('Quit training')
-    elif args.adv:
-        try:
-            if args.pretrain:
-                for epoch in range(start_epoch, args.prepochs):
-                    clf_loss, clf_acc, r_acc, g_acc, parity, male = adversarial(args, train_iter, model, (optimizer, optimizer_r, optimizer_g, optimizer_k), epoch, True, True)
-                    print('-' * 90)
-                    meta = "| epoch {:2d} ".format(epoch)
-                    print(meta + "| pre Train loss {:5.2f} | pre Train acc {:5.2f} | Gender acc {:5.2f} | Race acc {:5.2f}".format(clf_loss, clf_acc, g_acc, r_acc))
-
-                    clf_loss, clf_acc, r_acc, g_acc, parity, male = adversarial(args, test_iter, model, (optimizer, optimizer_r, optimizer_g, optimizer_k), epoch, False, True)
-                    print(len(meta)* " " + "| Test loss {:5.2f} | Test accuracy {:5.2f} | Gender acc {:5.2f} | Race acc {:5.2f} | Parity {:5.2f}".format(clf_loss, clf_acc, g_acc, r_acc, parity))
-                    print('-'*50)
-                print('End pretrain')
-            for epoch in range(start_epoch, args.epochs):
-                clf_loss, clf_acc, r_acc, g_acc, parity, male = adversarial(args, train_iter, model, (optimizer, optimizer_r, optimizer_g, optimizer_k), epoch, True)
-                print('-' * 90)
-                meta = "| epoch {:2d} ".format(epoch)
-                print(meta + "| Train loss {:5.2f} | Train acc {:5.2f} | Gender acc {:5.2f} | Race acc {:5.2f}".format(clf_loss, clf_acc, g_acc, r_acc))
-
-                clf_loss, clf_acc, r_acc, g_acc, parity, male = adversarial(args, test_iter, model, (optimizer, optimizer_r, optimizer_g, optimizer_k), epoch, False)
-                print(len(meta)* " " + "| Test loss {:5.2f} | Test accuracy {:5.2f} | Gender acc {:5.2f} | Race acc {:5.2f} | Parity {:5.2f}".format(clf_loss, clf_acc, g_acc, r_acc, parity))
-        
-        except KeyboardInterrupt:
-            print('-'*50)
-            print('Quit training')    
     else:
         try:
             if args.pretrain:
                 for epoch in range(start_epoch, args.prepochs):
-                    clf_loss, clf_acc, g_acc, adv_acc, parity, hs = run(args, train_iter, model, gender, (optimizer, optimizer_r, optimizer_g, optimizer_k, optimizer_ge), epoch, True, True)
+                    clf_loss, clf_acc, parity, hs = run(args, train_iter, model, gender, (optimizer, optimizer_phi), epoch, True, True)
                     print('-' * 90)
                     meta = "| epoch {:2d} ".format(epoch)
                     print(meta + "| pre Train loss {:5.2f} | pre Train acc {:5.2f} | Gender acc {:5.2f}".format(clf_loss, clf_acc, g_acc))
 
-                    clf_loss, clf_acc, g_acc, adv_acc, parity, hs = run(args, test_iter, model, gender, (optimizer, optimizer_r, optimizer_g, optimizer_k, optimizer_ge), epoch, False, True)
+                    clf_loss, clf_acc, parity, hs = run(args, test_iter, model, gender, (optimizer, optimizer_phi), epoch, False, True)
                     print(len(meta)* " " + "| Test loss {:5.2f} | Test accuracy {:5.2f} | Gender acc {:5.2f} | Parity {:5.2f} | adv {:5.2f} | hs {:5.2f}".format(clf_loss, clf_acc, g_acc, parity, adv_acc, hs))
                     print('-'*50)
                 print('End pretrain')
             for epoch in range(start_epoch, args.epochs):
-                clf_loss, clf_acc, g_acc, adv_acc, parity, hs = run(args, train_iter, model, gender, (optimizer, optimizer_r, optimizer_g, optimizer_k, optimizer_ge), epoch, True)
+                clf_loss, clf_acc, parity, hs = run(args, train_iter, model, gender, (optimizer, optimizer_phi), epoch, True, True)
                 print('-' * 90)
                 meta = "| epoch {:2d} ".format(epoch)
-                print(meta + "| Train loss {:5.2f} | Train acc {:5.2f} | Gender acc {:5.2f}".format(clf_loss, clf_acc, g_acc))
+                print(meta + "| Train loss {:5.2f} | Train acc {:5.2f} | ".format(clf_loss, clf_acc))
 
-                clf_loss, clf_acc, g_acc, adv_acc, parity, hs = run(args, test_iter, model, gender, (optimizer, optimizer_r, optimizer_g, optimizer_k, optimizer_ge), epoch, False)
-                print(len(meta)* " " + "| Test loss {:5.2f} | Test accuracy {:5.2f} | Gender acc {:5.2f} | Parity {:5.2f} | adv {:5.2f} | hs {:5.2f}".format(clf_loss, clf_acc, g_acc, parity, adv_acc, hs))
+                clf_loss, clf_acc, parity, hs = run(args, train_iter, model, gender, (optimizer, optimizer_phi), epoch, False, True)
+                print(len(meta)* " " + "| Test loss {:5.2f} | Test accuracy {:5.2f} | Parity {:5.2f} | hs {:5.2f}".format(clf_loss, clf_acc, parity, hs))
         
         except KeyboardInterrupt:
             print('-'*50)
@@ -412,9 +288,10 @@ def main(args):
                 else:
                     label_g = factor.squeeze(1).long()
                 z = model.encoder(inputs)
+                phi = model.classifier.map(z)
                 ge = gender(F.relu(z.detach()))
                 loss = loss_fn(ge, label_g)
-                hs += HSIC(z, label_g).item()
+                hs += HSIC(phi, label_g).item()
                 optimizer_ge.zero_grad()
                 loss.backward()
                 optimizer_ge.step()
@@ -436,11 +313,12 @@ def main(args):
                 else:
                     label_g = factor.squeeze(1).long()
                 z = model.encoder(inputs)
+                phi = model.classifier.map(z)
                 ge = gender(F.relu(z.detach()))
                 _, predicted = torch.max(ge.data, 1)
                 correct += (predicted == label_g).sum().item()
                 total += label.size(0)
-                hs += HSIC(z, label_g).item()
+                hs += HSIC(phi, label_g).item()
             adv_acc = 100 * correct / total
             print('adv: {:5.2f} | hs {:5.2f}'.format(adv_acc, hs))
 

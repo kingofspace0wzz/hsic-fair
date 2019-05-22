@@ -53,14 +53,14 @@ class Classifier(nn.Module):
             nn.LeakyReLU(0.2, True),
         )
         self.net = nn.Sequential(
-            # nn.Linear(input_dim, hidden_dim),
-            # nn.LeakyReLU(0.2, True),
+            nn.Linear(input_dim, hidden_dim),
+            nn.LeakyReLU(0.2, True),
             nn.Linear(hidden_dim, num_labels),
         )
        
     def forward(self, x):
         phi = self.map(x)
-        output = self.net(phi)
+        output = self.net(x)
         return output, phi
 
 class Model(nn.Module):
