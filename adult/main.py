@@ -227,7 +227,7 @@ def main(args):
     # gender = Classifier(args.code_dim*3, 2, args.hidden).to(args.device)
     optimizer = torch.optim.Adam(list(model.encoder.parameters()) + 
                                 list(model.classifier.net.parameters()), lr=args.lr)
-    optimizer_phi = torch.optim.Adam(list(model.classifier.phi.parameters()), lr=args.lr)
+    optimizer_phi = torch.optim.Adam(list(model.classifier.map.parameters()), lr=args.lr)
     # gender = Classifier(args.code_dim, 2, args.hidden).to(args.device)
     gender = nn.Linear(args.code_dim, 2).to(args.device)
     optimizer_ge = torch.optim.Adam(gender.parameters(), lr=args.lr)
