@@ -220,9 +220,7 @@ class YaleBHSIC(nn.Module):
         )
 
     def forward(self, x):
-        if x.size(-1) != 32*32:
-            x.view(-1, 32*32)
-        z = self.encoder(x)
+        z = self.encoder(x.view(-1, 32*32))
         # phi = F.leaky_relu(self.phi(F.leaky_relu(z, 0.5, True)), 0.5, True)
         # phi = self.phi(F.leaky_relu(z, 0.2, True))
         # out = self.classifier(F.leaky_relu(phi))
