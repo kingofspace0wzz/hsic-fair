@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch.distributions.normal import Normal
 from torch.distributions.kl import kl_divergence
 import numpy as np
+import pyro.contrib.gp as gp
 
 def recon_loss(recon, target):
     loss = F.binary_cross_entropy(recon, target, reduction='sum')
@@ -39,12 +40,5 @@ def HSIC(z, s, fix=False):
     return torch.sum(torch.diag(torch.chain_matmul(K,H,L,H))) / (n-1)**2
 
 def rbf(x, y):
-    x_size = x.size(0)
-    y_size = y.size(0)
-    dim = x.size(1)
-    x = x.unsqueeze(1)
-    y = y.unsqueeze(0)
-    tiled_x = x.expand(x_size, y_size, dim)
-    tiled_y = y.expand(x_size, y_size, dim)
-    kernel = (tiled_x - tiled_y).pow(2).mean(2)/float(dim)
-    return torch.exp(-0.5*kernel)
+    rbf = gp.kernels.RBF(input_dim=x.size(-1))
+    return rbf(x, y)
