@@ -103,10 +103,10 @@ def make_dataset(dir, class_to_idx, extensions=None, is_valid_file=None, train=F
                         light = 4
                     item = (path, class_to_idx[target], light)
                     if train:
-                        if x == '085E' and y == '20':
+                        if x == '070E' and y == '40':
                             images.append(item)
-                        # elif x == '070E' and y == '35':
-                            # images.append(item)
+                        elif x == '070E' and y == '35':
+                            images.append(item)
                         elif x == '000E' and y == '00':
                             images.append(item)
                     else:
