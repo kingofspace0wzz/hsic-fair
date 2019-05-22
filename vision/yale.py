@@ -65,7 +65,7 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True):
         total_loss = loss + args.c * HSIC(phi, light)
         if train:
             optimizer.zero_grad()
-            loss.backward()
+            total_loss.backward()
             optimizer.step()
 
             optimizer_phi.zero_grad()
