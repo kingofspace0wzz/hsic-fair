@@ -203,9 +203,9 @@ class YaleBHSIC(nn.Module):
         super(YaleBHSIC, self).__init__()
         # self.encoder = nn.Linear(32*32, 512)
         self.encoder = nn.Sequential(
-            nn.Linear(32*32, 512),
-            nn.LeakyReLU(0.2, True),
-            nn.Linear(512, 128),
+            nn.Linear(32*32, 256),
+            # nn.LeakyReLU(0.2, True),
+            # nn.Linear(, 128),
         )
         self.phi = nn.Sequential(
             nn.Linear(128, phi_dim),
