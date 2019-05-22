@@ -122,14 +122,21 @@ def get_german(path, batch_size, test_size=0.5):
 
 if __name__ == "__main__":
     train_loader, test_loader = get_adult('adult.data', 1)
+    total = 0
+    l = 0
     for i, (x, y, z) in enumerate(train_loader):
-        print(z)
-        break
+        total += z.size(0)
+        l += y.sum().item()
+    print(l / total)
 
     train_loader, test_loader = get_german('german.data', 100)
     total = 0
+    l = 0
     f = 0
     for x, y, z in train_loader:
         total += z.size(0)
         f += z.sum().item() 
+        l += y.sum().item()
+    
     print(f / total)
+    print(l / total)
