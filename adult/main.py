@@ -83,7 +83,7 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         # label_r = factor.chunk(2, dim=-1)[0].long()
 
         y, z, _ = model(inputs)
-        phi = model.classifier.map(F.relu(z.detach()))
+        phi = model.classifier.map(F.relu(z))
         loss = criterion(y, label)
         hsic = HSIC(phi, label_g)
         total_loss = loss + hsic
@@ -96,7 +96,8 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
                 optimizer.step()
 
                 optimizer_phi.zero_grad()
-                neg_h = -hsic
+                phi = model.classifier.map(F.relu(z.detach()))
+                neg_h = -HSIC(phi, label_g)
                 neg_h.backward()
                 optimizer_phi.step()
         
