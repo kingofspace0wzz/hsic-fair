@@ -35,6 +35,7 @@ parser.add_argument('--c', type=float, default=10)
 parser.add_argument('--lepochs', type=int, default=10)
 parser.add_argument('--gamma', type=float, default=0.6)
 parser.add_argument('--pretrain', action='store_true')
+parser.add_argument('--phi_dim', type=int, default=128)
 args = parser.parse_args()
 
 torch.manual_seed(args.seed)
@@ -141,7 +142,7 @@ def main(args):
         model = YaleB().to(args.device)
         clf = nn.Linear(192*168, 5).to(args.device)
     else:
-        model = YaleBHSIC().to(args.device) 
+        model = YaleBHSIC(args.phi_dim).to(args.device) 
         clf = nn.Linear(256, 5).to(args.device)
         clf2 = nn.Linear(256, 5).to(args.device)
     optimizer = torch.optim.Adam(list(model.encoder.parameters()) + 
