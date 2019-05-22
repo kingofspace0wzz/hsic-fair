@@ -213,9 +213,9 @@ class YaleBHSIC(nn.Module):
             nn.Sigmoid()
         )
         self.classifier = nn.Sequential(
-            nn.Linear(256, 38),
-            # nn.LeakyReLU(0.2, True),
-            # nn.Linear(128, 38),
+            nn.Linear(256, 128),
+            nn.LeakyReLU(0.2, True),
+            nn.Linear(128, 38),
         )
 
     def forward(self, x):
