@@ -58,7 +58,7 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True):
     for i, (data, label, light) in enumerate(data_iter):
         data, label, light = data[:, 0, :, :].to(device), label.to(device), light.to(device)
         y, z = model(data.view(-1, 32*32))
-        phi = model.phi(z.detach())
+        phi = model.phi(z)
         l = clf(F.relu(z.detach()))
         loss = criterion(y, label)
         hsic = HSIC(phi, light)
