@@ -85,7 +85,7 @@ def load_german(path):
                   )
     sensitive_attribs = ['age']
     # Z =(input_data.loc[:, sensitive_attribs].assign(age=lambda df: (int(df['age']) >= 45).astype(int)))
-    Z = (input_data['age'].astype(int) >= 45).astype(int)
+    Z = (input_data['age'].astype(int) >= 44).astype(int)
     Z = (Z.fillna('Unknown').pipe(pd.get_dummies, drop_first=True))
     y = (input_data['target'] == 1).astype(int)
 
@@ -126,8 +126,10 @@ if __name__ == "__main__":
         print(z)
         break
 
-    train_loader, test_loader = get_german('german.data', 1)
+    train_loader, test_loader = get_german('german.data', 100)
+    total = 0
+    f = 0
     for x, y, z in train_loader:
-        print(z)
-        print(z.sum().item())
-        break
+        total += z.size(0)
+        f += z.sum().item() 
+    print(f / total)
