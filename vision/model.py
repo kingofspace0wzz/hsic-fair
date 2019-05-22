@@ -201,13 +201,13 @@ class YaleBHSIC(nn.Module):
     """Some Information about YaleBHSIC"""
     def __init__(self, phi_dim):
         super(YaleBHSIC, self).__init__()
-        self.encoder = nn.Linear(32*32, 256)
+        self.encoder = nn.Linear(32*32, 512)
         self.phi = nn.Sequential(
-            nn.Linear(256, phi_dim),
+            nn.Linear(512, phi_dim),
             nn.LeakyReLU(0.2, True)
         )
         self.classifier = nn.Sequential(
-            nn.Linear(256, 128),
+            nn.Linear(512, 128),
             nn.LeakyReLU(0.2, True),
             nn.Linear(128, 38),
         )
