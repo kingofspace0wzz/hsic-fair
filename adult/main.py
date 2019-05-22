@@ -281,6 +281,7 @@ def main(args):
             gender.train()
             correct = 0
             total = 0
+            total_m = 0
             hs = 0
             for data in train_iter:
                 inputs, label, factor = [d.to(args.device) for d in data] 
@@ -321,8 +322,11 @@ def main(args):
                 correct += (predicted == label_g).sum().item()
                 total += label.size(0)
                 hs += HSIC(phi, label_g).item()
+                ones = torch.ones(label.size(0), dtype=torch.long).to(args.device)
+                total_m += (ones == label_g).sum().item()
+            male = total_m / total
             adv_acc = 100 * correct / total
-            print('adv: {:5.2f} | hs {:5.2f}'.format(adv_acc, hs))
+            print('adv: {:5.2f} | hs {:5.2f} | m {:5.2f}'.format(adv_acc, hs, male))
 
 if __name__ == "__main__":
     main(args)
