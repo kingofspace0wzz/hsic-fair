@@ -85,7 +85,7 @@ def load_german(path):
                   )
     sensitive_attribs = ['age']
     # Z =(input_data.loc[:, sensitive_attribs].assign(age=lambda df: (int(df['age']) >= 45).astype(int)))
-    Z = (input_data['age'].astype(int) >= 34).astype(int)
+    Z = (input_data['age'].astype(int) >= 45).astype(int)
     Z = (Z.fillna('Unknown').pipe(pd.get_dummies, drop_first=True))
     y = (input_data['target'] == 1).astype(int)
 
