@@ -207,9 +207,11 @@ class YaleBHSIC(nn.Module):
             nn.LeakyReLU(0.2, True)
         )
         self.classifier = nn.Sequential(
-            nn.Linear(512, 38),
-            # nn.LeakyReLU(0.2, True),
-            # nn.Linear(128, 38),
+            nn.Linear(512, 256),
+            nn.LeakyReLU(0.2, True),
+            nn.Linear(256, 128),
+            nn.LeakyReLU(0.2, True),
+            nn.Linear(128, 38)
         )
 
     def forward(self, x):
