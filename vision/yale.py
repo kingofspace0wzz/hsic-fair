@@ -132,7 +132,7 @@ def main(args):
     dataset = args.data.rstrip('/').split('/')[-1]
     train_loader, test_loader = get_yale(args.batch_size, 'data/yale')
     torch.cuda.set_device(args.device_id)
-
+    torch.autograd.set_detect_anomaly(True)
     if args.base:
         model = YaleB().to(args.device)
         clf = nn.Linear(192*168, 5).to(args.device)
