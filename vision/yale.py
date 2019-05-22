@@ -172,7 +172,7 @@ def main(args):
         try:
             if args.pretrain:
                 for epoch in range(10):
-                    _, _, _, _ = run(args, train_loader, model, clf, (optimizer, optimizer_phi), epoch, train=False, True)
+                    _, _, _, hs = run(args, train_loader, model, clf, (optimizer, optimizer_phi), epoch, train=False, True)
             for epoch in range(start_epoch, args.epochs): 
                 clf_loss, acc, acc_l, hs = run(args, train_loader, model, clf, (optimizer, optimizer_phi), epoch, train=True)
                 print('-' * 90)
