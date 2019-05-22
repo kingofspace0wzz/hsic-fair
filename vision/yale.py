@@ -34,12 +34,13 @@ parser.add_argument('--D', action='store_true')
 parser.add_argument('--c', type=float, default=10)
 parser.add_argument('--lepochs', type=int, default=10)
 parser.add_argument('--gamma', type=float, default=0.6)
+parser.add_argument('--pretrain', action='store_true')
 args = parser.parse_args()
 
 torch.manual_seed(args.seed)
 random.seed(args.seed)
 
-def run(args, data_iter, model, clf, optimizers, epoch, train=True):
+def run(args, data_iter, model, clf, optimizers, epoch, train=True, pretrain=False):
     batch_size = args.batch_size
     size = len(data_iter.dataset)
     device = args.device
@@ -63,16 +64,19 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True):
         loss = criterion(y, label)
         hsic = HSIC(phi, light)
         total_loss = loss + args.c * HSIC(phi, light)
-        if train:
-            optimizer.zero_grad()
-            total_loss.backward()
-            optimizer.step()
 
+        if pretrain:
             optimizer_phi.zero_grad()
             phi = model.phi(z.detach())
             neg_h = -HSIC(phi, light)
             neg_h.backward()
             optimizer_phi.step()
+
+        if train:
+            optimizer.zero_grad()
+            total_loss.backward()
+            optimizer.step()
+
 
         clf_loss += loss.item()
         hs += hsic.item()
@@ -166,6 +170,9 @@ def main(args):
         print("| Test loss {:5.2f} | Test acc {:5.2f} | L acc {:5.2f}".format(test_loss, test_acc, test_acc_l))
     else:
         try:
+            if args.pretrain:
+                for epoch in range(10):
+                    _, _, _, _ = run(args, train_loader, model, clf, (optimizer, optimizer_phi), epoch, train=False, True)
             for epoch in range(start_epoch, args.epochs): 
                 clf_loss, acc, acc_l, hs = run(args, train_loader, model, clf, (optimizer, optimizer_phi), epoch, train=True)
                 print('-' * 90)
