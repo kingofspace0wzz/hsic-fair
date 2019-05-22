@@ -79,11 +79,11 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True, pretrain=Fal
             total_loss.backward()
             optimizer.step()
 
-            optimizer_phi.zero_grad()
-            phi = model.phi(z.detach())
-            neg_h = -HSIC(phi, light)
-            neg_h.backward()
-            optimizer_phi.step()
+            # optimizer_phi.zero_grad()
+            # phi = model.phi(z.detach())
+            # neg_h = -HSIC(phi, light)
+            # neg_h.backward()
+            # optimizer_phi.step()
             
 
         clf_loss += loss.item()
@@ -278,7 +278,7 @@ def main(args):
         try:
             if args.pretrain:
                 criterion = torch.nn.CrossEntropyLoss()
-                for epoch in range(10):
+                for epoch in range(30):
                     for i, (data, label, light) in enumerate(train_loader):
                         data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
                         y, z = model(data.view(-1, 32*32))
@@ -286,7 +286,7 @@ def main(args):
                         loss = criterion(y, label)
                         loss.backward()
                         optimizer.step()
-                for epoch in range(10):
+                for epoch in range(30):
                     for i, (data, label, light) in enumerate(train_loader):
                         data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
                         y, z = model(data.view(-1, 32*32))
