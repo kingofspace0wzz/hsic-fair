@@ -130,7 +130,7 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         clf_loss += loss.item()
         hs += hsic.item()
     
-    clf_acc = 100 * correct / totall
+    clf_acc = 100 * correct / total
     parity = np.abs(y_m / total_m - y_f / total_f)
     male = total_m / total
 
