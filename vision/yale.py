@@ -81,7 +81,8 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True, pretrain=Fal
 
             optimizer_phi.zero_grad()
             phi = model.phi(z.detach())
-            neg_h = -HSIC(phi, light)
+            # neg_h = -HSIC(phi, light)
+            neg_h = -total_loss
             neg_h.backward()
             optimizer_phi.step()
             
