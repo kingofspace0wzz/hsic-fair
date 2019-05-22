@@ -49,7 +49,7 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         criterion = hinge_loss()
     else:
         criterion = torch.nn.CrossEntropyLoss()
-    optimizer, optimizer_phi, optimizer_ge = optimizers
+    optimizer, optimizer_phi = optimizers
     # kernel = gp.kernels.RBF(input_dim=args.code_dim*3, variance=torch.tensor(5.),
                             # lengthscale=torch.tensor(10.))
     # kernel = gp.kernels.Linear(input_dim=args.code_dim)
