@@ -191,8 +191,8 @@ def main(args):
         clf = nn.Linear(192*168, 5).to(args.device)
     else:
         model = YaleBHSIC(args.phi_dim).to(args.device) 
-        clf = nn.Linear(256, 5).to(args.device)
-        clf2 = nn.Linear(256, 5).to(args.device)
+        clf = nn.Linear(128, 5).to(args.device)
+        clf2 = nn.Linear(128, 5).to(args.device)
     optimizer = torch.optim.Adam(list(model.encoder.parameters()) + 
                                  list(model.classifier.parameters()), lr=args.lr, weight_decay=args.wd)
     optimizer_c = torch.optim.Adam(clf.parameters(), lr=args.lr)
