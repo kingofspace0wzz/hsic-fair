@@ -43,7 +43,7 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True):
     batch_size = args.batch_size
     size = len(data_iter.dataset)
     device = args.device
-    optimizer, optimizer_c = optimizers
+    optimizer, optimizer_phi = optimizers
     if train:
         model.train()
     else:
@@ -57,15 +57,22 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True):
     total = 0
     for i, (data, label, light) in enumerate(data_iter):
         data, label, light = data[:, 0, :, :].to(device), label.to(device), light.to(device)
-        y, z, phi = model(data.view(-1, 32*32))
+        y, z = model(data.view(-1, 32*32))
+        phi = model.map(z)
         l = clf(F.relu(z.detach()))
         loss = criterion(y, label)
         hsic = HSIC(phi, light)
+        total_loss = loss + args.c * HSIC(phi, light)
         if train:
-            loss += args.c * hsic
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+            optimizer_phi.zero_grad()
+            phi = model.map(z.detach())
+            neg_h = -HSIC(phi, light)
+            neg_h.backward()
+            optimizer_phi.step()
 
         clf_loss += loss.item()
         hs += hsic.item()
@@ -135,6 +142,7 @@ def main(args):
         clf2 = nn.Linear(256, 5).to(args.device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
     optimizer_c = torch.optim.Adam(clf.parameters(), lr=args.lr)
+    optimizer_phi = torch.optim.Adam(model.phi.parameters(), lr=args.lr)
 
     start_epoch = 1
     print('\nStarting Training')
@@ -158,7 +166,7 @@ def main(args):
     else:
         try:
             for epoch in range(start_epoch, args.epochs): 
-                clf_loss, acc, acc_l, hs = run(args, train_loader, model, clf, (optimizer, optimizer_c), epoch, train=True)
+                clf_loss, acc, acc_l, hs = run(args, train_loader, model, clf, (optimizer, optimizer_phi), epoch, train=True)
                 print('-' * 90)
                 meta = "| epoch {:2d} ".format(epoch)
                 print(meta + "| Train loss {:5.2f} | Train acc {:5.2f} | L acc {:5.2f} | hs {:5.2f}".format(clf_loss, acc, acc_l, hs))
@@ -167,7 +175,7 @@ def main(args):
             print('-'*50)
             print('Quit Training')
 
-        test_loss, test_acc, test_acc_l, hs = run(args, test_loader, model, clf, (optimizer, optimizer_c), epoch, False)
+        test_loss, test_acc, test_acc_l, hs = run(args, test_loader, model, clf, (optimizer, optimizer_phi), epoch, False)
         print('-'*50)
         print("| Test loss {:5.2f} | Test acc {:5.2f} | L acc {:5.2f} | hs {:5.2f}".format(test_loss, test_acc, test_acc_l, hs))
 
@@ -180,7 +188,8 @@ def main(args):
             hs = 0
             for i, (data, label, light) in enumerate(train_loader):
                 data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
-                _, z, phi = model(data.view(-1, 32*32))
+                _, z = model(data.view(-1, 32*32))
+                phi = model.map(z)
                 l = clf2(F.relu(z.detach()))
                 loss = criterion(l, light)
                 hsic = HSIC(phi, light)
@@ -200,8 +209,9 @@ def main(args):
         hs = 0
         for i, (data, label, light) in enumerate(test_loader):
             data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
-            _, z, phi = model(data.view(-1, 32*32))
+            _, z = model(data.view(-1, 32*32))
             l = clf2(F.relu(z.detach()))
+            phi = model.map(z)
             hsic = HSIC(phi, light)
             hs += hsic.item()
             total += data.size(0)

@@ -203,14 +203,19 @@ class YaleBHSIC(nn.Module):
         super(YaleBHSIC, self).__init__()
         self.encoder = nn.Linear(32*32, 256)
         self.phi = nn.Linear(256, 128)
-        self.classifier = nn.Linear(128, 38)
+        self.classifier = nn.Sequential(
+            nn.Linear(258, 128),
+            nn.LeakyReLU(0.2, True),
+            nn.Linear(128, 38),
+        )
+    def map(self, z):
+        return F.relu(self.phi(F.leaky_relu(z, 0.2, True)))
 
     def forward(self, x):
         z = self.encoder(x)
         # phi = F.leaky_relu(self.phi(F.leaky_relu(z, 0.5, True)), 0.5, True)
-        D = z.size(-1)
         # phi = self.phi(F.leaky_relu(z, 0.2, True))
         # out = self.classifier(F.leaky_relu(phi))
-        phi = torch.sigmoid(self.phi(F.leaky_relu(z, 0.2, True)))
-        out = self.classifier(phi)
-        return out, z, phi
+        
+        out = self.classifier(F.leaky_relu(z, 0.2, True))
+        return out, z
