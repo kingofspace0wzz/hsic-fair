@@ -208,7 +208,7 @@ class YaleBHSIC(nn.Module):
             nn.Linear(256, 128),
         )
         self.phi = nn.Sequential(
-            nn.Linear(256, phi_dim),
+            nn.Linear(128, phi_dim),
             # nn.LeakyReLU(0.2, True)
             nn.Sigmoid()
         )
