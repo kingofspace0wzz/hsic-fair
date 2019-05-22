@@ -58,7 +58,7 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True):
     for i, (data, label, light) in enumerate(data_iter):
         data, label, light = data[:, 0, :, :].to(device), label.to(device), light.to(device)
         y, z = model(data.view(-1, 32*32))
-        phi = model.map(z.detach())
+        phi = model.phi(z.detach())
         l = clf(F.relu(z.detach()))
         loss = criterion(y, label)
         hsic = HSIC(phi, light)
@@ -69,7 +69,7 @@ def run(args, data_iter, model, clf, optimizers, epoch, train=True):
             optimizer.step()
 
             optimizer_phi.zero_grad()
-            phi = model.map(z.detach())
+            phi = model.phi(z.detach())
             neg_h = -HSIC(phi, light)
             neg_h.backward()
             optimizer_phi.step()
@@ -190,7 +190,7 @@ def main(args):
             for i, (data, label, light) in enumerate(train_loader):
                 data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
                 _, z = model(data.view(-1, 32*32))
-                phi = model.map(z)
+                phi = model.phi(z)
                 l = clf2(F.relu(z.detach()))
                 loss = criterion(l, light)
                 hsic = HSIC(phi, light)
@@ -212,7 +212,7 @@ def main(args):
             data, label, light = data[:, 0, :, :].to(args.device), label.to(args.device), light.to(args.device)
             _, z = model(data.view(-1, 32*32))
             l = clf2(F.relu(z.detach()))
-            phi = model.map(z)
+            phi = model.phi(z)
             hsic = HSIC(phi, light)
             hs += hsic.item()
             total += data.size(0)

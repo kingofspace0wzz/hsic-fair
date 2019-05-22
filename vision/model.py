@@ -202,14 +202,15 @@ class YaleBHSIC(nn.Module):
     def __init__(self):
         super(YaleBHSIC, self).__init__()
         self.encoder = nn.Linear(32*32, 256)
-        self.phi = nn.Linear(256, 128)
+        self.phi = nn.Sequential(
+            nn.Linear(256, 128),
+            nn.LeakyReLU(0.2, True)
+        )
         self.classifier = nn.Sequential(
             nn.Linear(256, 128),
             nn.LeakyReLU(0.2, True),
             nn.Linear(128, 38),
         )
-    def map(self, z):
-        return F.relu(self.phi(F.leaky_relu(z, 0.2, True)))
 
     def forward(self, x):
         z = self.encoder(x)
