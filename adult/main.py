@@ -342,7 +342,8 @@ def main(args):
             data, target, factor = test_iter.dataset[:1000]
             g = factor.chunk(2, dim=-1)[1].squeeze(1)
         else:
-            data, target, _ = test_iter.dataset[:250]
+            data, target, factor = test_iter.dataset[:250]
+            g = factor.squeeze(1)
         z = model.encoder(data.to(args.device))
         z, target, g = z.detach().cpu().numpy(), target.cpu().numpy(), g.cpu().numpy()
         tsne = TSNE(n_components=2, init='pca', random_state=0)
