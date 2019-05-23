@@ -119,7 +119,7 @@ class VAE(nn.Module):
             raise NotImplementedError
 
     def forward(self, x, c=None):
-        q_z, p_z = self.encoder(x)
+        q_z, p_z = self.encoder(x.view(-1, 28*28))
         if self.training:
             z = q_z.rsample()
         else:

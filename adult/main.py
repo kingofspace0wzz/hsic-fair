@@ -19,7 +19,7 @@ from loss import perm_loss, kernel_loss, hinge_loss, HSIC
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data', type=str, default='adult.data')
-parser.add_argument('--batch_size', type=int, default=128)
+parser.add_argument('--batch_size', type=int, default=256)
 parser.add_argument('--code_dim', type=int, default=32)
 parser.add_argument('--hidden', type=int, default=64)
 parser.add_argument('--drop', type=float, default=0.2)
