@@ -75,12 +75,25 @@ def main(args):
             kl_div += kld.item() / size
         print('-'*50)
         print(" Epoch {} |re loss {:5.2f} | kl div {:5.2f}".format(epoch, re_loss, kl_div))
-    z = p_z.sample()
+    for data, target in test_loader:
+        data, target = data.squeeze(1).to(device), target.to(device)
+        c = F.one_hot(target.long(), num_classes=10).float()
+        output, _, _, z = model(data, c)
+        break
+    images = [data.view(data.size(0), 1, 28, 28)[:10].cpu()]
     for i in range(10):
         c = F.one_hot(torch.ones(z.size(0)).long()*i, num_classes=10).float().to(device)
         output = model.decoder(torch.cat((z, c), dim=-1))
-        n = min(z.size(0), 8)
-        save_image(output.view(z.size(0), 1, 28, 28)[:n].cpu(), 'imgs/recon_{}.png'.format(i), nrow=n)
+        images.append(output.view(data.size(0), 1, 28, 28)[:10].cpu())
+    images = torch.cat(images, dim=0)
+    save_image(images, 'imgs/recon.png')
+
+    # z = p_z.sample()
+    # for i in range(10):
+    #     c = F.one_hot(torch.ones(z.size(0)).long()*i, num_classes=10).float().to(device)
+    #     output = model.decoder(torch.cat((z, c), dim=-1))
+    #     n = min(z.size(0), 8)
+    #     save_image(output.view(z.size(0), 1, 28, 28)[:n].cpu(), 'imgs/recon_{}.png'.format(i), nrow=n)
 
 
 
