@@ -208,7 +208,7 @@ class YaleBHSIC(nn.Module):
         # self.encoder = nn.Linear(32*32, 512)
         self.encoder = nn.Sequential(
             nn.Linear(32*32, 256),
-            # nn.LeakyReLU(0.2, True),
+            nn.LeakyReLU(0.2, True),
             # nn.Linear(256, 128),
         )
         self.phi = nn.Sequential(
@@ -229,6 +229,6 @@ class YaleBHSIC(nn.Module):
         # phi = self.phi(F.leaky_relu(z, 0.2, True))
         # out = self.classifier(F.leaky_relu(phi))
         
-        out = self.classifier(F.leaky_relu(z, 0.2, True))
+        out = self.classifier(z)
         # out = self.classifier(F.sigmoid(z))
         return out, z
