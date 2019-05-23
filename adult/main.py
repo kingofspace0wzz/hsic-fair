@@ -105,6 +105,11 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
                 neg_h = -HSIC(phi, label_g)
                 neg_h.backward()
                 optimizer_phi.step()
+
+            else:
+                optimizer.zero_grad()
+                total_loss.backward()
+                optimizer.step()
         
         _, predicted = torch.max(y.data, 1)
         correct += (predicted == label).sum().item()
