@@ -357,7 +357,7 @@ def plot_embedding(X, y , z, title=None):
     plt.figure()
     ax = plt.subplot(111)
     for i in range(X.shape[0]):
-        plt.text(X[i, 0], X[i, 1], str(y[i]),
+        plt.text(X[i, 0], X[i, 1], str(int(y[i])),
                  color=plt.cm.Set1(z[i] / 10.),
                  fontdict={'weight': 'bold', 'size': 9})
     plt.xticks([]), plt.yticks([])
