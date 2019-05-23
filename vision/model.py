@@ -109,7 +109,7 @@ class VAE(nn.Module):
         self.code_dim = code_dim
         self.batch_size = batch_size
         self.de_dim = code_dim + num_labels
-        if data == 'mnist':
+        if data == 'mnist' or data == 'fashion':
             self.encoder = Encoder(code_dim)
             self.decoder = Decoder(self.de_dim)
         elif data == 'cifar':
