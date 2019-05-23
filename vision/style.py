@@ -50,7 +50,7 @@ def main(args):
     device = args.device
     if dataset == 'mnist':
         train_loader, test_loader = get_mnist(args.batch_size, 'data/mnist')
-    elif dataset == 'fmnist':
+    elif dataset == 'fashion':
         train_loader, test_loader = get_fashion_mnist(args.batch_size, 'data/fashion')
 
     model = VAE(28*28, args.code_dim, args.batch_size, 10, dataset).to(device)
