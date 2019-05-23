@@ -354,12 +354,12 @@ def plot_embedding(X, y , z, title=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
-    color = 'r', 'b'
+    color = ['r', 'b']
     plt.figure()
     ax = plt.subplot(111)
-    for i, c in zip(range(X.shape[0]), color):
+    for i, c in range(X.shape[0]):
         plt.text(X[i, 0], X[i, 1], str(int(y[i])),
-                 color=c,
+                 color=color[int(z[i])],
                  fontdict={'weight': 'bold', 'size': 9})
     plt.xticks([]), plt.yticks([])
     if title is not None:
