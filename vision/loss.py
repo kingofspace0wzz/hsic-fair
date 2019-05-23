@@ -34,7 +34,7 @@ def HSIC(z, s, fix=False):
     H = torch.eye(z.size(0)).to(z.device) - torch.ones_like(K) / n
     
     # encode protected factor into one_hot
-    h = F.one_hot(s).float()
+    h = F.one_hot(s, num_classes=5).float()
     # L = h * h^T
     L = torch.matmul(h, h.t())
     return torch.sum(torch.diag(torch.chain_matmul(K,H,L,H))) / (n-1)**2
