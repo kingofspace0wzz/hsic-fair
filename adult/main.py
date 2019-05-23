@@ -35,6 +35,7 @@ parser.add_argument('--test_size', type=float, default=0.5)
 parser.add_argument('--ge', action='store_true')
 parser.add_argument('--hsic', action='store_true')
 parser.add_argument('--seed', type=int, default=22)
+parser.add_argument('--tsne', action='store_true')
 args = parser.parse_args()
 
 torch.manual_seed(args.seed)
@@ -331,6 +332,26 @@ def main(args):
             male = total_m / total
             adv_acc = 100 * correct / total
             print('adv: {:5.2f} | hs {:5.2f} | m {:5.2f} | adv loss {:5.2f}'.format(adv_acc, hs, male, adv_loss))
+
+    if args.tsne:
+        from sklearn.manifold import TSNE
+        from matplotlib import pyplot as plt
+        if dataset == 'adult.data':
+            data, target, _ = test_iter.dataset[:1000]
+        else:
+            data, target, _ = test_iter.dataset[:250]
+        z = model.encoder(data)
+        z, target = z.cpu().numpy(), target.cpu().numpy()
+        tsne = TSNE(n_components=2, init='pca', random_state=0)
+        z_2d = tsne.fit_transform(z)
+        target_ids = range(2)
+        target_names = torch.tensor([0, 1]).numpy()
+        plt.figure(figsize=(6, 5))
+        colors = 'r', 'g'
+        for i, c, label in zip(target_ids, colors, target_names):
+            plt.scatter(z_2d[target==i, 0], z_2d[target==i, 1], c=c, label=label)
+            plt.legend()
+            plt.savefig('tsne.png')
 
 if __name__ == "__main__":
     main(args)
