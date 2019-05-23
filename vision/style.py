@@ -63,7 +63,7 @@ def main(args):
             data, target = data.to(device), target.to(device)
             c = F.one_hot(target.long(), num_classes=10).float()
             output, q_z, p_z, z = model(data, c)
-            hsic = HSIC(z, c)
+            hsic = HSIC(z, c.long())
             reloss = recon_loss(output, data)
             kld = total_kld(q_z, p_z)
             loss = reloss + kld + args.c * hsic
