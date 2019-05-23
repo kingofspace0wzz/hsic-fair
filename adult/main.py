@@ -344,7 +344,7 @@ def main(args):
         else:
             data, target, _ = test_iter.dataset[:250]
         z = model.encoder(data.to(args.device))
-        z, target, g = z.cpu().numpy(), target.cpu().numpy(), g.cpu().numpy()
+        z, target, g = z.detach().cpu().numpy(), target.cpu().numpy(), g.cpu().numpy()
         tsne = TSNE(n_components=2, init='pca', random_state=0)
         z_2d = tsne.fit_transform(z)
         plot_embedding(z_2d, target, g)
