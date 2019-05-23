@@ -204,16 +204,16 @@ class YaleBHSIC(nn.Module):
         # self.encoder = nn.Linear(32*32, 512)
         self.encoder = nn.Sequential(
             nn.Linear(32*32, 256),
-            nn.LeakyReLU(0.2, True),
-            nn.Linear(256, 128),
+            # nn.LeakyReLU(0.2, True),
+            # nn.Linear(256, 128),
         )
         self.phi = nn.Sequential(
-            nn.Linear(128, phi_dim),
+            nn.Linear(256, phi_dim),
             # nn.LeakyReLU(0.2, True)
             nn.Sigmoid()
         )
         self.classifier = nn.Sequential(
-            nn.Linear(128, 38),
+            nn.Linear(256, 38),
             # nn.Sigmoid(),
             # nn.LeakyReLU(0.2, True),
             # nn.Linear(128, 38),
