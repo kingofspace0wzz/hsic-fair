@@ -63,7 +63,7 @@ def main(args):
             data, target = data.to(device), target.to(device)
             c = F.one_hot(target.long(), num_classes=10).float()
             output, q_z, p_z, z = model(data, c)
-            hsic = HSIC(z, target)
+            hsic = HSIC(z, target, n=10)
             reloss = recon_loss(output, data)
             kld = total_kld(q_z, p_z)
             loss = reloss + kld + args.c * hsic
@@ -77,7 +77,7 @@ def main(args):
 
     z = p_z.sample()
     for i in range(10):
-        c = F.one_hot(torch.tensor(i).to(device))
+        c = F.one_hot(torch.tensor(i), num_classes=10).to(device))
         output = model.decoder(torch.cat((z, c), dim=-1))
         n = min(z.size(0), 8)
         save_image(output.view(z.size(0), 1, 28, 28)[:n].cpu(), 'imgs/recon_{}.png'.format(i), nrow=n)

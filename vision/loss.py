@@ -23,7 +23,7 @@ def perm_loss(joint, indepedent):
     loss = 0.5 * (F.cross_entropy(joint, zeros) + F.cross_entropy(indepedent, ones))
     return loss
     
-def HSIC(z, s, fix=False):
+def HSIC(z, s, fix=False, n=None):
     n = z.size(0)
     # k(x, y) = <z(x), z(y)>, K = z * z^T
     if fix:
@@ -34,7 +34,10 @@ def HSIC(z, s, fix=False):
     H = torch.eye(z.size(0)).to(z.device) - torch.ones_like(K) / n
     
     # encode protected factor into one_hot
-    h = F.one_hot(s, num_classes=5).float()
+    if n is not None:
+        h = F.one_hot(s, num_classes=n).float()
+    else:
+        h = F.one_hot(s).float()
     # L = h * h^T
     L = torch.matmul(h, h.t())
     return torch.sum(torch.diag(torch.chain_matmul(K,H,L,H))) / (n-1)**2
