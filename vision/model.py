@@ -124,10 +124,11 @@ class VAE(nn.Module):
             z = q_z.rsample()
         else:
             z = q_z.mean
+        z0 = z
         if c is not None:
-            z = torch.cat((z,c), dim=-1)
+            z = torch.cat((z0,c), dim=-1)
         output = self.decoder(z)
-        return output, q_z, p_z, z
+        return output, q_z, p_z, z0
 
 class Discriminator(nn.Module):
     '''
