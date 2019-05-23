@@ -38,7 +38,7 @@ class Decoder(nn.Module):
     def __init__(self, code_dim):
         super().__init__()
         self.decoder = nn.Sequential(
-            nn.Linear(20, 512),
+            nn.Linear(code_dim, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
@@ -103,26 +103,29 @@ class ConvDecoder(nn.Module):
 
 class VAE(nn.Module):
     """VAE"""
-    def __init__(self, input_dim, code_dim, batch_size, data='mnist'):
+    def __init__(self, input_dim, code_dim, batch_size, num_labels=0, data='mnist'):
         super(VAE, self).__init__()
         self.input_dim = input_dim
         self.code_dim = code_dim
         self.batch_size = batch_size
+        self.de_dim = code_dim + num_labels
         if data == 'mnist':
             self.encoder = Encoder(code_dim)
-            self.decoder = Decoder(code_dim)
+            self.decoder = Decoder(self.de_dim)
         elif data == 'cifar':
             self.encoder = ConvEncoder(code_dim, nc=3)
-            self.decoder = ConvDecoder(code_dim, nc=3)
+            self.decoder = ConvDecoder(self.de_dim, nc=3)
         else:
             raise NotImplementedError
 
-    def forward(self, x):
+    def forward(self, x, c=None):
         q_z, p_z = self.encoder(x)
         if self.training:
             z = q_z.rsample()
         else:
             z = q_z.mean
+        if c is not None:
+            z = torch.cat((z,c), dim=-1)
         output = self.decoder(z)
         return output, q_z, p_z, z
 
