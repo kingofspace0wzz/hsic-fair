@@ -74,7 +74,6 @@ def main(args):
             kl_div += kld.item()
         print('-'*50)
         print(" Epoch {} |re loss {:5.2f} | kl div {:5.2f}".format(epoch, re_loss, kl_div))
-
     z = p_z.sample()
     for i in range(10):
         c = F.one_hot(torch.tensor(i), num_classes=10).to(device)
