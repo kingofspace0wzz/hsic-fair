@@ -77,7 +77,7 @@ def main(args):
         print(" Epoch {} |re loss {:5.2f} | kl div {:5.2f}".format(epoch, re_loss, kl_div))
     z = p_z.sample()
     for i in range(10):
-        c = F.one_hot(torch.tensor(i), num_classes=10).to(device)
+        c = F.one_hot(torch.tensor(i), num_classes=10).float().to(device)
         output = model.decoder(torch.cat((z, c), dim=-1))
         n = min(z.size(0), 8)
         save_image(output.view(z.size(0), 1, 28, 28)[:n].cpu(), 'imgs/recon_{}.png'.format(i), nrow=n)
