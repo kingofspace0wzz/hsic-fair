@@ -60,7 +60,7 @@ def main(args):
         re_loss = 0
         kl_div = 0
         for data, target in train_loader:
-            data, target = data.to(device), target.long().to(device)
+            data, target = data.long().to(device), target.long().to(device)
             output, q_z, p_z, z = model(data, F.one_hot(target))
             hsic = HSIC(z, target)
             reloss = recon_loss(output, data)
