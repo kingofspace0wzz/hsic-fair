@@ -17,7 +17,7 @@ from loss import (recon_loss, total_kld, disc_loss, HSIC)
 parser = argparse.ArgumentParser()
 parser.add_argument('--data', type=str, default='data/mnist',
                     help='location of the data')
-parser.add_argument('--batch_size', type=int, default=5),
+parser.add_argument('--batch_size', type=int, default=256),
 parser.add_argument('--epochs', type=int, default=50),
 parser.add_argument('--code_dim', type=int, default=10)
 parser.add_argument('--lr', type=float, default=1e-3),
@@ -59,19 +59,20 @@ def main(args):
     for epoch in range(args.epochs):
         re_loss = 0
         kl_div = 0
+        size = len(train_loader.dataset)
         for data, target in train_loader:
             data, target = data.squeeze(1).to(device), target.to(device)
             c = F.one_hot(target.long(), num_classes=10).float()
             output, q_z, p_z, z = model(data, c)
             hsic = HSIC(z, target.long())
-            reloss = recon_loss(output, data)
+            reloss = recon_loss(output, data.view(-1, 28*28))
             kld = total_kld(q_z, p_z)
             loss = reloss + kld + args.c * hsic
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            re_loss += reloss.item()
-            kl_div += kld.item()
+            re_loss += reloss.item() / size
+            kl_div += kld.item() / size
         print('-'*50)
         print(" Epoch {} |re loss {:5.2f} | kl div {:5.2f}".format(epoch, re_loss, kl_div))
     z = p_z.sample()
