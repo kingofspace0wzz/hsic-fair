@@ -92,11 +92,11 @@ class ConvDecoder(nn.Module):
             # nn.ReLU(True),
             # nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
             # nn.ReLU(True),
-            nn.ConvTranpose2d(64, 32, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1),
             nn.ReLU(True),
-            nn.ConvTranpose2d(32, 32, kernel_size=4, stride=2, padding=1),
+            nn.ConvTranspose2d(32, 32, kernel_size=4, stride=2, padding=1),
             nn.ReLU(True),
-            nn.ConvTranpose2d(32, nc, kernel_size=4, stride=2, padding=1)
+            nn.ConvTranspose2d(32, nc, kernel_size=4, stride=2, padding=1)
         )
         self.fc = nn.Linear(code_dim, 64*4*4)
 
