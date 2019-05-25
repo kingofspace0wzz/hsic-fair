@@ -80,13 +80,13 @@ def main(args):
         c = F.one_hot(target.long(), num_classes=10).float()
         output, _, _, z = model(data, c)
         break
-    images = [data.view(data.size(0), 1, 28, 28)[:8].cpu()]
-    for i in range(8):
+    images = [data.view(data.size(0), 1, 28, 28)[:30].cpu()]
+    for i in range(10):
         c = F.one_hot(torch.ones(z.size(0)).long()*i, num_classes=10).float().to(device)
         output = model.decoder(torch.cat((z, c), dim=-1))
-        images.append(output.view(data.size(0), 1, 28, 28)[:8].cpu())
+        images.append(output.view(data.size(0), 1, 28, 28)[:30].cpu())
     images = torch.cat(images, dim=0)
-    save_image(images, 'imgs/recon_c{}.png'.format(args.c), nrow=8)
+    save_image(images, 'imgs/recon_c{}.png'.format(args.c), nrow=30)
 
     # z = p_z.sample()
     # for i in range(10):
