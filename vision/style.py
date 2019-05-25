@@ -19,7 +19,7 @@ parser.add_argument('--data', type=str, default='data/mnist',
                     help='location of the data')
 parser.add_argument('--batch_size', type=int, default=256),
 parser.add_argument('--epochs', type=int, default=50),
-parser.add_argument('--code_dim', type=int, default=10)
+parser.add_argument('--code_dim', type=int, default=20)
 parser.add_argument('--lr', type=float, default=1e-3),
 parser.add_argument('--wd', type=float, default=0,
                     help='weight decay')
@@ -58,7 +58,12 @@ def main(args):
         train_loader, test_loader, _ = get_stl10(args.batch_size, 'data/stl10')
 
     model = VAE(28*28, args.code_dim, args.batch_size, 10, dataset).to(device)
+    phi = nn.Sequential(
+        nn.Linear(args.code_dim, args.phi_dim),
+        nn.LeakyReLU(0.2, True),
+    ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer_phi = torch.optim.Adam(phi.parameters(), lr=args.lr)
     criterion = nn.MSELoss(reduction='sum')
     for epoch in range(args.epochs):
         re_loss = 0
@@ -68,16 +73,22 @@ def main(args):
             data, target = data.squeeze(1).to(device), target.to(device)
             c = F.one_hot(target.long(), num_classes=10).float()
             output, q_z, p_z, z = model(data, c)
-            hsic = HSIC(z, target.long())
+            hsic = HSIC(phi(z), target.long())
             if dataset == 'mnist' or dataset == 'fashion':
                 reloss = recon_loss(output, data.view(-1, 28*28))
             else:
                 reloss = criterion(output, data)
             kld = total_kld(q_z, p_z)
             loss = reloss + kld + args.c * hsic
+            
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            optimizer_phi.zero_grad()
+            neg = -HSIC(phi(z), target.long())
+            neg.backward()
+            optimizer_phi.step()
+
             re_loss += reloss.item() / size
             kl_div += kld.item() / size
         print('-'*50)

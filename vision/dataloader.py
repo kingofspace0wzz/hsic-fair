@@ -109,6 +109,8 @@ def make_dataset(dir, class_to_idx, extensions=None, is_valid_file=None, train=F
                             images.append(item)
                         elif x == '000E' and y == '00':
                             images.append(item)
+                        elif x== ['035E','085E', '110E'] and y in ['20', '40']:
+                            images.append(item)
                     else:
                         images.append(item)
 
