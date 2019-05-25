@@ -50,7 +50,7 @@ def COCO(z, s):
     # L = h * h^T
     L = torch.matmul(h, h.t())
 
-    return torch.chain_matmul(H, K, H, H, L, H) / n**2
+    return torch.norm(torch.chain_matmul(H, K, H, H, L, H)) / n**2
     
 
 def KCC(z, s):
