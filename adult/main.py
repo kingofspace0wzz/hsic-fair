@@ -99,7 +99,7 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         
         if train:
                 
-            if args.kic:
+            if args.hsic:
                 optimizer.zero_grad()
                 total_loss.backward()
                 optimizer.step()
