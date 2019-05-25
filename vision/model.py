@@ -120,7 +120,7 @@ class VAE(nn.Module):
             # raise NotImplementedError
 
     def forward(self, x, c=None):
-        if data == 'mnist' or data == 'fashion':
+        if self.data == 'mnist' or self.data == 'fashion':
             x = x.view(-1, self.input_dim)
         q_z, p_z = self.encoder(x)
         if self.training:
