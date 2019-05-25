@@ -52,6 +52,10 @@ def main(args):
         train_loader, test_loader = get_mnist(args.batch_size, 'data/mnist')
     elif dataset == 'fashion':
         train_loader, test_loader = get_fashion_mnist(args.batch_size, 'data/fashion')
+    elif dataset == 'svhn':
+        train_loader, test_loader, _ = get_svhn(args.batch_size, 'data/svhn')
+    elif dataset == 'stl':
+        train_loader, test_loader, _ = get_stl10(args.batch_size, 'data/stl10')
 
     model = VAE(28*28, args.code_dim, args.batch_size, 10, dataset).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -65,7 +69,10 @@ def main(args):
             c = F.one_hot(target.long(), num_classes=10).float()
             output, q_z, p_z, z = model(data, c)
             hsic = HSIC(z, target.long())
-            reloss = recon_loss(output, data.view(-1, 28*28))
+            if dataset == 'mnist' or dataset == 'fashion':
+                reloss = recon_loss(output, data.view(-1, 28*28))
+            else:
+                reloss = recon_loss(output, data)
             kld = total_kld(q_z, p_z)
             loss = reloss + kld + args.c * hsic
             optimizer.zero_grad()
@@ -80,13 +87,17 @@ def main(args):
         c = F.one_hot(target.long(), num_classes=10).float()
         output, _, _, z = model(data, c)
         break
-    images = [data.view(data.size(0), 1, 28, 28)[:30].cpu()]
+    if dataset == 'mnist' or dataset == 'fashion':
+        img_size = [data.size(0), 1, 28, 28]
+    else:
+        img_size = [data.size(0), 3, 32, 32]
+    images = [data.view(img_size)[:30].cpu()]
     for i in range(10):
         c = F.one_hot(torch.ones(z.size(0)).long()*i, num_classes=10).float().to(device)
         output = model.decoder(torch.cat((z, c), dim=-1))
-        images.append(output.view(data.size(0), 1, 28, 28)[:30].cpu())
+        images.append(output.view(img_size)[:30].cpu())
     images = torch.cat(images, dim=0)
-    save_image(images, 'imgs/recon_c{}.png'.format(args.c), nrow=30)
+    save_image(images, 'imgs/recon_c{}_{}.png'.format(int(args.c), args.dataset), nrow=30)
 
     # z = p_z.sample()
     # for i in range(10):

@@ -109,17 +109,20 @@ class VAE(nn.Module):
         self.code_dim = code_dim
         self.batch_size = batch_size
         self.de_dim = code_dim + num_labels
+        self.data = data
         if data == 'mnist' or data == 'fashion':
             self.encoder = Encoder(code_dim)
             self.decoder = Decoder(self.de_dim)
-        elif data == 'cifar':
+        else:
             self.encoder = ConvEncoder(code_dim, nc=3)
             self.decoder = ConvDecoder(self.de_dim, nc=3)
-        else:
-            raise NotImplementedError
+        # else:
+            # raise NotImplementedError
 
     def forward(self, x, c=None):
-        q_z, p_z = self.encoder(x.view(-1, 28*28))
+        if data == 'mnist' or data == 'fashion':
+            x = x.view(-1, self.input_dim)
+        q_z, p_z = self.encoder(x)
         if self.training:
             z = q_z.rsample()
         else:
