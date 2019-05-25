@@ -59,7 +59,7 @@ def main(args):
 
     model = VAE(28*28, args.code_dim, args.batch_size, 10, dataset).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-
+    criterion = nn.MSELoss(reduction='sum')
     for epoch in range(args.epochs):
         re_loss = 0
         kl_div = 0
@@ -72,7 +72,7 @@ def main(args):
             if dataset == 'mnist' or dataset == 'fashion':
                 reloss = recon_loss(output, data.view(-1, 28*28))
             else:
-                reloss = recon_loss(output, data)
+                reloss = criterion(output, data)
             kld = total_kld(q_z, p_z)
             loss = reloss + kld + args.c * hsic
             optimizer.zero_grad()
