@@ -55,18 +55,18 @@ class ConvEncoder(nn.Module):
         self.nc = nc
         self.code_dim = code_dim
         self.encoder = nn.Sequential(
-            nn.Conv2d(nc, 32, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(nc, 32, kernel_size=4, stride=2, padding=1), # 16 x 16
             nn.ReLU(True),
-            nn.Conv2d(32, 32, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(32, 32, kernel_size=4, stride=2, padding=1), # 8 x 8
             nn.ReLU(True),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1), # 3 x 3
             nn.ReLU(True),
-            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(True),
-            nn.Conv2d(64, 256, kernel_size=4, stride=1),
-            nn.ReLU(True),
-            View((-1, 256)),
-            nn.Linear(256, code_dim * 2)
+            # nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
+            # nn.ReLU(True),
+            # nn.Conv2d(64, 256, kernel_size=4, stride=1),
+            # nn.ReLU(True),
+            View((-1, 3*3*64)),
+            nn.Linear(3*3*64, code_dim * 2)
         )
 
     def forward(self, inputs):
@@ -83,13 +83,13 @@ class ConvDecoder(nn.Module):
         self.nc = nc
         self.code_dim = code_dim
         self.decoder = nn.Sequential(
-            nn.Linear(code_dim, 256),
-            View((-1, 256, 1, 1)),
+            nn.Linear(code_dim, 3*3*64),
+            View((-1, 64, 3, 3)),
             nn.ReLU(True),
-            nn.Conv2d(256, 64, kernel_size=4),
-            nn.ReLU(True),
-            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
-            nn.ReLU(True),
+            # nn.Conv2d(256, 64, kernel_size=4),
+            # nn.ReLU(True),
+            # nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
+            # nn.ReLU(True),
             nn.Conv2d(64, 32, kernel_size=4, stride=2, padding=1),
             nn.ReLU(True),
             nn.Conv2d(32, 32, kernel_size=4, stride=2, padding=1),
