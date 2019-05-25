@@ -15,7 +15,7 @@ from matplotlib import offsetbox
 from data import get_adult, get_german
 from model import Encoder, Classifier, Model
 from utils import batch_permutation, dot_kernel
-from loss import perm_loss, kernel_loss, hinge_loss, HSIC
+from loss import perm_loss, kernel_loss, hinge_loss, HSIC, COCO
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data', type=str, default='adult.data')
@@ -40,6 +40,7 @@ parser.add_argument('--ge', action='store_true')
 parser.add_argument('--hsic', action='store_true')
 parser.add_argument('--seed', type=int, default=22)
 parser.add_argument('--tsne', action='store_true')
+parser.add_argument('--crit', type=str, default='hsic')
 args = parser.parse_args()
 
 torch.manual_seed(args.seed)
@@ -90,19 +91,25 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         y, z, _ = model(inputs)
         phi = model.classifier.map(F.relu(z))
         loss = criterion(y, label)
-        hsic = HSIC(phi, label_g)
-        total_loss = loss + args.c * hsic
+        if args.crit == 'hsic':
+            kic = HSIC(phi, label_g)
+        elif args.crit == 'coco':
+            kic = COCO(phi, label_g)
+        total_loss = loss + args.c * kic
         
         if train:
                 
-            if args.hsic:
+            if args.kic:
                 optimizer.zero_grad()
                 total_loss.backward()
                 optimizer.step()
 
                 optimizer_phi.zero_grad()
                 phi = model.classifier.map(F.relu(z.detach()))
-                neg_h = -HSIC(phi, label_g)
+                if args.crit == 'hsic':
+                    neg_h = -HSIC(phi, label_g)
+                else:
+                    neg_h = -COCO(phi, label_g)
                 neg_h.backward()
                 optimizer_phi.step()
 
@@ -138,7 +145,7 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         # print(((predicted == ones) == (zeros == label_g)).sum().item())
 
         clf_loss += loss.item()
-        hs += hsic.item()
+        hs += kic.item()
     
     clf_acc = 100 * correct / total
     parity = np.abs(y_m / total_m - y_f / total_f)

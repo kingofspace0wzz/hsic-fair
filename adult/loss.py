@@ -45,6 +45,12 @@ def COCO(z, s):
     K = torch.matmul(z, z.t())
     H = torch.eye(n).to(z.device) - torch.ones_like(K) / n
 
+    # encode protected factor into one_hot
+    h = F.one_hot(s).float()
+    # L = h * h^T
+    L = torch.matmul(h, h.t())
+
+    return torch.chain_matmul(H, K, H, H, L, H) / n**2
     
 
 def KCC(z, s):
