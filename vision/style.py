@@ -92,7 +92,7 @@ def main(args):
             re_loss += reloss.item() / size
             kl_div += kld.item() / size
         print('-'*50)
-        print(" Epoch {} |re loss {:5.2f} | kl div {:5.2f}".format(epoch, re_loss, kl_div))
+        print(" Epoch {} |re loss {:5.2f} | kl div {:5.2f} | hs {:5.2f}".format(epoch, re_loss, kl_div, hsic))
     for data, target in test_loader:
         data, target = data.squeeze(1).to(device), target.to(device)
         c = F.one_hot(target.long(), num_classes=10).float()
