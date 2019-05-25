@@ -97,7 +97,7 @@ def main(args):
         output = model.decoder(torch.cat((z, c), dim=-1))
         images.append(output.view(img_size)[:30].cpu())
     images = torch.cat(images, dim=0)
-    save_image(images, 'imgs/recon_c{}_{}.png'.format(int(args.c), args.dataset), nrow=30)
+    save_image(images, 'imgs/recon_c{}_{}.png'.format(int(args.c), dataset), nrow=30)
 
     # z = p_z.sample()
     # for i in range(10):
