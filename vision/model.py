@@ -59,20 +59,22 @@ class ConvEncoder(nn.Module):
             nn.ReLU(True),
             nn.Conv2d(32, 32, kernel_size=4, stride=2, padding=1), # 8 x 8
             nn.ReLU(True),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1), # 3 x 3
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1), # 4 x 4
             nn.ReLU(True),
             # nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
             # nn.ReLU(True),
             # nn.Conv2d(64, 256, kernel_size=4, stride=1),
             # nn.ReLU(True),
-            View((-1, 3*3*64)),
-            nn.Linear(3*3*64, code_dim * 2)
+            # View((-1, 3*3*64)),
+            # nn.Linear(3*3*64, code_dim * 2)
         )
+        self.fc = nn.Linear(4*4*64, code_dim * 2)
 
     def forward(self, inputs):
         p_z = Normal(torch.zeros((inputs.size(0), self.code_dim), device=inputs.device),
                       (0.5 * torch.zeros((inputs.size(0), self.code_dim), device=inputs.device)).exp())
         h = self.encoder(inputs)
+        h = self.fc(h.view(-1, 64*4*4))
         mu = h[:, self.code_dim:]
         logvar = h[:, :self.code_dim]
         return Normal(mu, (0.5 * logvar).exp()), p_z
@@ -83,8 +85,8 @@ class ConvDecoder(nn.Module):
         self.nc = nc
         self.code_dim = code_dim
         self.decoder = nn.Sequential(
-            nn.Linear(code_dim, 3*3*64),
-            View((-1, 64, 3, 3)),
+            # nn.Linear(code_dim, 3*3*64),
+            # View((-1, 64, 3, 3)),
             nn.ReLU(True),
             # nn.Conv2d(256, 64, kernel_size=4),
             # nn.ReLU(True),
@@ -96,9 +98,10 @@ class ConvDecoder(nn.Module):
             nn.ReLU(True),
             nn.Conv2d(32, nc, kernel_size=4, stride=2, padding=1)
         )
+        self.fc = nn.Linear(code_dim, 64*4*4)
 
     def forward(self, z):
-        outputs = self.decoder(z)
+        outputs = self.decoder(self.fc(z).view(-1, 64, 4, 4))
         return outputs
 
 class VAE(nn.Module):
