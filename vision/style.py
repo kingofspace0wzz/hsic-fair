@@ -85,7 +85,7 @@ def main(args):
             loss.backward()
             optimizer.step()
             optimizer_phi.zero_grad()
-            neg = -HSIC(phi(z), target.long())
+            neg = -HSIC(phi(z.detach()), target.long())
             neg.backward()
             optimizer_phi.step()
 
