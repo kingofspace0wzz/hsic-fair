@@ -134,7 +134,7 @@ def main(args):
             if i >= 5:
                 break
         data, target = torch.cat(datas, dim=0), torch.cat(targets, dim=0)
-        z = model.encoder(data.to(args.device))
+        _, _, _, z = model(data.to(args.device))
         z, target = z.detach().cpu().numpy(), target.cpu().numpy()
         tsne = TSNE(n_components=2, init='pca', random_state=0)
         z_2d = tsne.fit_transform(z)
