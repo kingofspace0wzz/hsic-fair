@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch.distributions.normal import Normal
 from torch.distributions.kl import kl_divergence
 import numpy as np
+import pyro.contrib.gp as gp
 
 def recon_loss(recon, target):
     loss = F.binary_cross_entropy(recon, target, reduction='sum')
@@ -27,10 +28,13 @@ def kernel_loss(weight1, weight2, z, kernel):
     # loss = torch.pow(torch.norm(torch.matmul(weight1, weight2.t())), 2)
     return loss
 
-def HSIC(z, s):
+def HSIC(z, s, fix=False):
     n = z.size(0)
     # k(x, y) = <z(x), z(y)>, K = z * z^T
-    K = torch.matmul(z, z.t())
+    if fix:
+        K = rbf(z, z)
+    else:
+        K = torch.matmul(z, z.t())
     # H = I - 1 * 1^T / (n-1)^2
     H = torch.eye(z.size(0)).to(z.device) - torch.ones_like(K) / n
     
@@ -40,9 +44,12 @@ def HSIC(z, s):
     L = torch.matmul(h, h.t())
     return torch.sum(torch.diag(torch.chain_matmul(K,H,L,H))) / (n-1)**2
     
-def COCO(z, s):
+def COCO(z, s, fix=False):
     n = z.size(0)
-    K = torch.matmul(z, z.t())
+    if fix:
+        K = rbf(z, z)
+    else:
+        K = torch.matmul(z, z.t())
     H = torch.eye(n).to(z.device) - torch.ones_like(K) / n
 
     # encode protected factor into one_hot
@@ -73,3 +80,6 @@ class hinge_loss(nn.Module):
     def forward(self, output, target):
         return torch.clamp(1 - torch.mul(output, target.float()), min=0)
 
+def rbf(x, y):
+    rbf = gp.kernels.RBF(input_dim=x.size(-1))
+    return rbf(x, y)

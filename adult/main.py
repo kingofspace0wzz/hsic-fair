@@ -92,11 +92,17 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
         phi = model.classifier.map(F.relu(z))
         loss = criterion(y, label)
         if args.crit == 'hsic':
-            kic = HSIC(phi, label_g)
+            if args.fix:
+                kic = HSIC(z, label_g, True)    
+            else:
+                kic = HSIC(phi, label_g)
         elif args.crit == 'coco':
-            kic = COCO(phi, label_g)
+            if args.fix:
+                kic = COCO(z, label_g, True)    
+            else:
+                kic = COCO(phi, label_g)
         total_loss = loss + args.c * kic
-        
+
         if train:
                 
             if args.hsic:
@@ -107,9 +113,15 @@ def run(args, data_iter, model, gender, optimizers, epoch, train=True, pretrain=
                 optimizer_phi.zero_grad()
                 phi = model.classifier.map(F.relu(z.detach()))
                 if args.crit == 'hsic':
-                    neg_h = -HSIC(phi, label_g)
+                    if args.fix:
+                        neg_h = -HSIC(phi, label_g)
+                    else:
+                        neg_h = -HSIC(z, label_g, True)
                 else:
-                    neg_h = -COCO(phi, label_g)
+                    if args.fix:
+                        neg_h = -COCO(phi, label_g)
+                    else:
+                        neg_h = -COCO(z, label_g, True)
                 neg_h.backward()
                 optimizer_phi.step()
 
@@ -348,7 +360,7 @@ def main(args):
             male = total_m / total
             adv_acc = 100 * correct / total
             print('adv: {:5.2f} | hs {:5.2f} | m {:5.2f} | adv loss {:5.2f}'.format(adv_acc, hs, male, adv_loss))
-
+    torch.save(model.state_dict(), '{}_{}_c{}'.format(args.crit, dataset, int(args.c)))
     if args.tsne:
         if dataset == 'adult.data':
             data, target, factor = test_iter.dataset[:1000]
