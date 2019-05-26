@@ -95,7 +95,7 @@ def main(args):
         plt.figure(figsize=(6, 5))
         for a in range(8):
             for b in range(a+1, 10):
-                plot_embedding(z_2d, a, b, target)
+                plot_embedding(z_2d, target, a, b, )
                 plt.savefig('tsne_c{}_{}_{}{}.png'.format(int(args.c), dataset, a, b))
 
 def plot_embedding(X, y, a, b, title=None):
