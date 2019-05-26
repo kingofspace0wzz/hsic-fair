@@ -55,19 +55,24 @@ def main(args):
     device = args.device
     if dataset == 'mnist':
         train_loader, test_loader = get_mnist(args.batch_size, 'data/mnist')
+        num = 10
     elif dataset == 'fashion':
         train_loader, test_loader = get_fashion_mnist(args.batch_size, 'data/fashion')
+        num = 10
     elif dataset == 'svhn':
         train_loader, test_loader, _ = get_svhn(args.batch_size, 'data/svhn')
+        num = 10
     elif dataset == 'stl':
         train_loader, test_loader, _ = get_stl10(args.batch_size, 'data/stl10')
     elif dataset == 'cifar':
         train_loader, test_loader = get_cifar(args.batch_size, 'data/cifar')
+        num = 10
     elif dataset == 'chair':
         train_loader, test_loader = get_chair(args.batch_size, '~/data/rendered_chairs')
+        num = 1393
     elif dataset == 'yale':
         train_loader, test_loader = get_yale(args.batch_size, 'data/yale')
-
+        num = 38
     model = VAE(28*28, args.code_dim, args.batch_size, 10, dataset).to(device)
     phi = nn.Sequential(
         nn.Linear(args.code_dim, args.phi_dim),
@@ -106,7 +111,7 @@ def main(args):
         print(" Epoch {} |re loss {:5.2f} | kl div {:5.2f} | hs {:5.2f}".format(epoch, re_loss, kl_div, hsic))
     for data, target in test_loader:
         data, target = data.squeeze(1).to(device), target.to(device)
-        c = F.one_hot(target.long(), num_classes=10).float()
+        c = F.one_hot(target.long(), num_classes=num).float()
         output, _, _, z = model(data, c)
         break
     if dataset == 'mnist' or dataset == 'fashion':
