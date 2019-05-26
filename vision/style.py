@@ -87,7 +87,7 @@ def main(args):
         size = len(train_loader.dataset)
         for data, target in train_loader:
             data, target = data.squeeze(1).to(device), target.to(device)
-            c = F.one_hot(target.long(), num_classes=10).float()
+            c = F.one_hot(target.long(), num_classes=num).float()
             output, q_z, p_z, z = model(data, c)
             hsic = HSIC(phi(z), target.long())
             if dataset == 'mnist' or dataset == 'fashion':
@@ -120,7 +120,7 @@ def main(args):
         img_size = [data.size(0), 3, 32, 32]
     images = [data.view(img_size)[:30].cpu()]
     for i in range(10):
-        c = F.one_hot(torch.ones(z.size(0)).long()*i, num_classes=10).float().to(device)
+        c = F.one_hot(torch.ones(z.size(0)).long()*i, num_classes=num).float().to(device)
         output = model.decoder(torch.cat((z, c), dim=-1))
         images.append(output.view(img_size)[:30].cpu())
     images = torch.cat(images, dim=0)
@@ -139,7 +139,7 @@ def main(args):
             if i >= 5:
                 break
         data, target = torch.cat(datas, dim=0), torch.cat(targets, dim=0)
-        c = F.one_hot(target.long(), num_classes=10).float()
+        c = F.one_hot(target.long(), num_classes=num).float()
         _, _, _, z = model(data.to(args.device), c.to(args.device))
         z, target = z.detach().cpu().numpy(), target.cpu().numpy()
         tsne = TSNE(n_components=2, init='pca', random_state=0)
