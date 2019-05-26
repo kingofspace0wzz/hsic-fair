@@ -93,10 +93,12 @@ def main(args):
         tsne = TSNE(n_components=2, init='pca', random_state=0)
         z_2d = tsne.fit_transform(z)
         plt.figure(figsize=(6, 5))
-        plot_embedding(z_2d, target)
-        plt.savefig('tsne_c{}_{}.png'.format(int(args.c), dataset))
+        for a in range(8):
+            for b in range(a+1, 10):
+                plot_embedding(z_2d, a, b, target)
+                plt.savefig('tsne_c{}_{}_{}{}.png'.format(int(args.c), dataset, a, b))
 
-def plot_embedding(X, y, title=None):
+def plot_embedding(X, y, a, b, title=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
@@ -105,7 +107,7 @@ def plot_embedding(X, y, title=None):
     plt.figure()
     ax = plt.subplot(111)
     for i in range(X.shape[0]):
-        if int(y[i]) == 2 or int(y[i]) == 9:
+        if int(y[i]) == a or int(y[i]) == b:
             plt.scatter(X[i, 0], X[i, 1],
                     c=colors[int(y[i])],
                     label=int(y[i]))
