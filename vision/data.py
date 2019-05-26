@@ -98,7 +98,11 @@ def get_stl10(batch_size, path_to_data):
     return train_loader, test_loader, unlabeled_loader
 
 def get_yale(batch_size, path):
-    yale = datasets.ImageFolder(path, transform=transforms.ToTensor())
+    all_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Resize((32, 32))
+    ])
+    yale = datasets.ImageFolder(path, transform=all_transform)
     train_loader = DataLoader(yale, batch_size=batch_size, shuffle=True)
     return train_loader, train_loader
 
