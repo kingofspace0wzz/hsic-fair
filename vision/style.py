@@ -128,14 +128,19 @@ def main(args):
     #     n = min(z.size(0), 8)
     #     save_image(output.view(z.size(0), 1, 28, 28)[:n].cpu(), 'imgs/recon_{}.png'.format(i), nrow=n)
     if args.tsne:
-        data, target = test_loader.dataset[:250]
+        datas, targets = [], []
+        for i, (data, target) in enumerate(test_loader):
+            datas.append(data), targets.append(target)
+            if i >= 5:
+                break
+        data, target = torch.cat(datas, dim=0), torch.cat(targets, dim=0)
         z = model.encoder(data.to(args.device))
         z, target = z.detach().cpu().numpy(), target.cpu().numpy()
         tsne = TSNE(n_components=2, init='pca', random_state=0)
         z_2d = tsne.fit_transform(z)
         plt.figure(figsize=(6, 5))
         plot_embedding(z_2d, target)
-        plt.savefig('tsne_c{}_{}.png'.format((int(args.c), dataset)))
+        plt.savefig('tsne_c{}_{}.png'.format(int(args.c), dataset))
 
 def plot_embedding(X, y, title=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
