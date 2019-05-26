@@ -41,6 +41,7 @@ parser.add_argument('--hsic', action='store_true')
 parser.add_argument('--seed', type=int, default=22)
 parser.add_argument('--tsne', action='store_true')
 parser.add_argument('--crit', type=str, default='hsic')
+parser.add_argument('--fix', action='store_true')
 args = parser.parse_args()
 
 torch.manual_seed(args.seed)
