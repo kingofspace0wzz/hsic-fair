@@ -102,7 +102,7 @@ def plot_embedding(X, y, a, b, title=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
     X = (X - x_min) / (x_max - x_min)
 
-    colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
+    colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'lightpink', 'orange', 'purple'
     # colors = 'w', 'w', 'b', 'w', 'w', 'w', 'w', 'w', 'w', 'purple'
     plt.figure()
     ax = plt.subplot(111)
