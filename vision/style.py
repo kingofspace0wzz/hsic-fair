@@ -89,7 +89,7 @@ def main(args):
             data, target = data.squeeze(1).to(device), target.to(device)
             c = F.one_hot(target.long(), num_classes=num).float()
             output, q_z, p_z, z = model(data, c)
-            hsic = HSIC(phi(z), target.long())
+            hsic = HSIC(phi(z), target.long(), num)
             if dataset == 'mnist' or dataset == 'fashion':
                 reloss = recon_loss(output, data.view(-1, 28*28))
             else:
@@ -101,7 +101,7 @@ def main(args):
             loss.backward()
             optimizer.step()
             optimizer_phi.zero_grad()
-            neg = -HSIC(phi(z.detach()), target.long())
+            neg = -HSIC(phi(z.detach()), target.long(), num)
             neg.backward()
             optimizer_phi.step()
 
