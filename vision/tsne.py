@@ -101,13 +101,14 @@ def plot_embedding(X, y, title=None):
     X = (X - x_min) / (x_max - x_min)
 
     colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
-    colors = 'w', 'w', 'b', 'w', 'w', 'w', 'w', 'w', 'w', 'purple'
+    # colors = 'w', 'w', 'b', 'w', 'w', 'w', 'w', 'w', 'w', 'purple'
     plt.figure()
     ax = plt.subplot(111)
     for i in range(X.shape[0]):
-        plt.scatter(X[i, 0], X[i, 1],
-                 c=colors[int(y[i])],
-                 label=int(y[i]))
+        if int(y[i]) == 2 or int(y[i]) == 9:
+            plt.scatter(X[i, 0], X[i, 1],
+                    c=colors[int(y[i])],
+                    label=int(y[i]))
     plt.xticks([]), plt.yticks([])
     if title is not None:
         plt.title(title)
