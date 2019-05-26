@@ -40,8 +40,8 @@ def get_cifar(batch_size, path_to_data='data/cifar'):
                 'dog', 'frog', 'horse', 'ship', 'truck']
     mean, std = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     transform = transforms.Compose([
-        transforms.ToTensor(),
         transforms.Resize((32, 32)),
+        transforms.ToTensor(),
         transforms.Normalize(mean, std)
     ])
     trainset = datasets.CIFAR10(path_to_data, train=True,
@@ -99,8 +99,8 @@ def get_stl10(batch_size, path_to_data):
 
 def get_yale(batch_size, path):
     all_transform = transforms.Compose([
+        transforms.Resize((32, 32)),
         transforms.ToTensor(),
-        transforms.Resize((32, 32))
     ])
     yale = datasets.ImageFolder(path, transform=all_transform)
     train_loader = DataLoader(yale, batch_size=batch_size, shuffle=True)
@@ -122,8 +122,8 @@ def get_yale_split(batch_size, path):
 
 def get_chair(batch_size, path):
     all_transform = transforms.Compose([
+        transforms.Resize((32, 32)),
         transforms.ToTensor(),
-        transforms.Resize((32, 32))
     ])
     chair = datasets.ImageFolder(path, transform=all_transform)
     train_loader = DataLoader(chair, batch_size=batch_size, shuffle=True)
