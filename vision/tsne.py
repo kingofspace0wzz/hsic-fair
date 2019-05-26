@@ -23,7 +23,7 @@ parser.add_argument('--data', type=str, default='data/mnist',
                     help='location of the data')
 parser.add_argument('--batch_size', type=int, default=256),
 parser.add_argument('--epochs', type=int, default=50),
-parser.add_argument('--code_dim', type=int, default=20)
+parser.add_argument('--code_dim', type=int, default=64)
 parser.add_argument('--lr', type=float, default=1e-3),
 parser.add_argument('--wd', type=float, default=0,
                     help='weight decay')
@@ -101,6 +101,7 @@ def plot_embedding(X, y, title=None):
     X = (X - x_min) / (x_max - x_min)
 
     colors = 'r', 'g', 'b', 'c', 'm', 'y', 'k', 'w', 'orange', 'purple'
+    colors = 'w', 'w', 'b', 'w', 'w', 'w', 'w', 'w', 'w', 'purple'
     plt.figure()
     ax = plt.subplot(111)
     for i in range(X.shape[0]):
