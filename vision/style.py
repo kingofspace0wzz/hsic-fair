@@ -146,7 +146,7 @@ def main(args):
         z_2d = tsne.fit_transform(z)
         plt.figure(figsize=(6, 5))
         plot_embedding(z_2d, target)
-        plt.savefig('tsne_c{}_{}.png'.format(int(args.c), dataset))
+        plt.savefig('tsnes/tsne_c{}_{}.png'.format(int(args.c), dataset))
 
 def plot_embedding(X, y, title=None):
     x_min, x_max = np.min(X, 0), np.max(X, 0)
