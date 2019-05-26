@@ -73,7 +73,7 @@ def main(args):
     elif dataset == 'yale':
         train_loader, test_loader = get_yale(args.batch_size, 'data/yale')
         num = 38
-    model = VAE(28*28, args.code_dim, args.batch_size, 10, dataset).to(device)
+    model = VAE(28*28, args.code_dim, args.batch_size, num, dataset).to(device)
     phi = nn.Sequential(
         nn.Linear(args.code_dim, args.phi_dim),
         nn.LeakyReLU(0.2, True),
