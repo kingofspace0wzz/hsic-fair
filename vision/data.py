@@ -41,6 +41,7 @@ def get_cifar(batch_size, path_to_data='data/cifar'):
     mean, std = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     transform = transforms.Compose([
         transforms.ToTensor(),
+        transforms.Resize((32, 32)),
         transforms.Normalize(mean, std)
     ])
     trainset = datasets.CIFAR10(path_to_data, train=True,
@@ -52,7 +53,7 @@ def get_cifar(batch_size, path_to_data='data/cifar'):
                                             download=True, transform=transform)
     test_loader = DataLoader(testset, batch_size=batch_size,
                                                 shuffle=False, num_workers=2)
-    return train_loader, test_loader, classes
+    return train_loader, test_loader
 
 def get_svhn(batch_size, path_to_data):
     mean, std = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -99,7 +100,7 @@ def get_stl10(batch_size, path_to_data):
 def get_yale(batch_size, path):
     yale = datasets.ImageFolder(path, transform=transforms.ToTensor())
     train_loader = DataLoader(yale, batch_size=batch_size, shuffle=True)
-    return train_loader
+    return train_loader, train_loader
 
 def get_yale_split(batch_size, path):
     mat_contents = sio.loadmat(path)
@@ -114,6 +115,15 @@ def get_yale_split(batch_size, path):
     return train_loader
 # def get_celeba(batch_size, path_to_data):
 #     train = datasets.CelebA
+
+def get_chair(batch_size, path):
+    all_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Resize((32, 32))
+    ])
+    chair = datasets.ImageFolder(path, transform=all_transform)
+    train_loader = DataLoader(chair, batch_size=batch_size, shuffle=True)
+    return train_loader, train_loader
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
