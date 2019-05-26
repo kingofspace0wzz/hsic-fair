@@ -14,7 +14,7 @@ import numpy as np
 
 from model import VAE, Discriminator, YaleB, YaleBHSIC
 from data import get_mnist, get_cifar, get_fashion_mnist, get_stl10, get_svhn, get_chair, get_yale
-from dataloader import get_yale
+# from dataloader import get_yale
 from utils import batch_rotate
 from loss import (recon_loss, total_kld, disc_loss, HSIC)
 
